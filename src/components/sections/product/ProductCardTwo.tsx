@@ -1,6 +1,6 @@
 "use client";
 
-import { memo, useCallback } from "react";
+import { memo, useCallback, type ReactNode } from "react";
 import { useRouter } from "next/navigation";
 import { Star } from "lucide-react";
 import CardStack from "@/components/cardStack/CardStack";
@@ -19,6 +19,9 @@ type ProductCard = Product & {
     brand: string;
     rating: number;
     reviewCount: string;
+    fullDescription?: ReactNode; // Added for modal
+    projectLink?: string; // Added for modal
+    projectLinkText?: string; // Added for modal, defaults to reviewCount if not provided
 };
 
 interface ProductCardTwoProps {
@@ -59,6 +62,7 @@ interface ProductCardTwoProps {
     textBoxButtonContainerClassName?: string;
     textBoxButtonClassName?: string;
     textBoxButtonTextClassName?: string;
+    onProjectCardClick?: (project: ProductCard) => void; // Added prop for modal
 }
 
 interface ProductCardItemProps {
@@ -71,6 +75,7 @@ interface ProductCardItemProps {
     cardPriceClassName?: string;
     cardRatingClassName?: string;
     actionButtonClassName?: string;
+    onCardClick: (product: ProductCard) => void; // Added prop for direct click handler
 }
 
 const ProductCardItem = memo(({
@@ -83,11 +88,12 @@ const ProductCardItem = memo(({
     cardPriceClassName = "",
     cardRatingClassName = "",
     actionButtonClassName = "",
+    onCardClick, // Destructure new prop
 }: ProductCardItemProps) => {
     return (
         <article
             className={cls("card group relative h-full flex flex-col gap-4 cursor-pointer p-4 rounded-theme-capped", cardClassName)}
-            onClick={product.onProductClick}
+            onClick={() => onCardClick(product)} // Use the new prop here
             role="article"
             aria-label={`${product.brand} ${product.name} - ${product.price}`}
         >
@@ -178,6 +184,7 @@ const ProductCardTwo = ({
     textBoxButtonContainerClassName = "",
     textBoxButtonClassName = "",
     textBoxButtonTextClassName = "",
+    onProjectCardClick, // Destructure new prop
 }: ProductCardTwoProps) => {
     const theme = useTheme();
     const router = useRouter();
@@ -187,12 +194,14 @@ const ProductCardTwo = ({
     const shouldUseLightText = shouldUseInvertedText(useInvertedBackground, theme.cardStyle);
 
     const handleProductClick = useCallback((product: ProductCard) => {
-        if (isFromApi) {
+        if (onProjectCardClick) { // If a modal handler is provided, use it
+            onProjectCardClick(product);
+        } else if (isFromApi) { // Otherwise, if from API, navigate
             router.push(`/shop/${product.id}`);
-        } else {
+        } else { // Fallback for non-API products without a modal handler
             product.onProductClick?.();
         }
-    }, [isFromApi, router]);
+    }, [onProjectCardClick, isFromApi, router]);
 
     const customGridRows = (gridVariant === "bento-grid" || gridVariant === "bento-grid-inverted")
         ? "md:grid-rows-[22rem_22rem] 2xl:grid-rows-[26rem_26rem]"
@@ -247,7 +256,8 @@ const ProductCardTwo = ({
             {products?.map((product, index) => (
                 <ProductCardItem
                     key={`${product.id}-${index}`}
-                    product={{ ...product, onProductClick: () => handleProductClick(product) }}
+                    product={product} // Pass product directly
+                    onCardClick={handleProductClick} // Pass the new handler
                     shouldUseLightText={shouldUseLightText}
                     cardClassName={cardClassName}
                     imageClassName={imageClassName}
