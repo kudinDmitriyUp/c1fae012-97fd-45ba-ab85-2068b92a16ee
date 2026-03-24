@@ -79,7 +79,7 @@ export default function LandingPage() {
   <div id="about" data-section="about">
       <MediaAbout
       useInvertedBackground={false}
-      animationType="blur-reveal"
+
       title="About Me"
       description="I'm a passionate full-stack developer with expertise in modern web technologies, building robust, scalable, and user-friendly applications that solve real-world problems. My journey in tech is driven by curiosity, continuous learning, and a commitment to excellence. I thrive on new challenges and collaborations, always seeking to refine my craft and deliver impactful digital experiences."
       tag="Meet Dmitry"
@@ -128,6 +128,7 @@ export default function LandingPage() {
 
   <div id="projects" data-section="projects">
       <ProductCardTwo
+      animationType="blur-reveal"
       textboxLayout="default"
       gridVariant="three-columns-all-equal-width"
       useInvertedBackground={false}
